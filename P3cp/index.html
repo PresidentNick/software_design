@@ -1,0 +1,190 @@
+
+<head>
+<style type="text/css">
+.style1 {
+				text-align: center;
+				font-family: Arial, Helvetica, sans-serif;
+}
+.style3 {
+				font-family: Arial, Helvetica, sans-serif;
+}
+.style4 {
+				margin-left: 40px;
+}
+.style5 {
+				margin-left: 80px;
+}
+.style7 {
+				border-width: 0px;
+}
+.style8 {
+				text-decoration: underline;
+				background-color: #FFFF00;
+}
+.style9 {
+				font-family: "Courier New", Courier, monospace;
+}
+.style10 {
+				font-family: "Arial Narrow";
+}
+.style11 {
+				font-family: "Courier New";
+}
+.style12 {
+				text-decoration: underline;
+}
+.style13 {
+				font-family: Arial, Helvetica, sans-serif;
+				color: #FF0000;
+				margin-left: 40px;
+}
+.style14 {
+				color: #FF0000;
+}
+</style>
+</head>
+
+<title>Prolog Modeling Constraints</title>
+
+<h1 class="style1">P3: Writing MetaModeling Constraints in Prolog</h1>
+<p class="style1"><strong>Due: Sunday, September 23rd, 5pm</strong></p>
+<p class="style3">Violet is a Java-based tool that allows you to draw a number 
+of different UML diagrams, including class diagrams, state diagrams, and so on.&nbsp; 
+Violet, like a lot of other tools, is not very smart.&nbsp; Look at the figure below.&nbsp; Violet 
+allows you to customize relationships between pairs of classes by drawing lines between boxes.&nbsp; At which point, you can say 'put a diamond 
+at this end of the line', 'put an inheritance arrow at this other end', and so on, yielding 
+a diagram that is UML-like, but nonsensical.&nbsp; The figure below is an 
+example with several errors:&nbsp; (1) inheritance links never have diamonds at the 
+subclass end, (2) inheritance links don't have labels, and (3) inheritance links 
+between classes are not dashed and are always solid.</p>
+<p class="style1"><a href="diagram1.xml">
+<img alt="" src="figs/violetbad.jpg" class="style7"></a></p>
+<p class="style3">Violet allows you to draw any nonsensical set of beautiful boxes and 
+links, and to output them as 
+an XML documents with a <strong>.violet</strong> extension.&nbsp; If you click on the figure above, 
+you will see the XML file that is produced.&nbsp; You will also see that Violet is not 
+very good at defining methods and variables -- it only provides a big fat text string 
+in which you can scribble anything.&nbsp; If you click on the figure below, you 
+will see the Prolog tables that describe the above figure.&nbsp; Note that the 
+prolog statement &quot;<span class="style11"><strong>:-dynamic T/C.</strong></span>&quot; 
+means table <span class="style11"><strong>T</strong></span> with
+<span class="style11"><strong>C</strong></span> columns is empty.</p>
+<p class="style1"><a href="diagram1.violet.pl">
+<img alt="" src="figs/tables.jpg" class="style7"></a></p>
+<p class="style3">In this assignment, you will write Prolog rules to check a 
+prolog database (multiple prolog tables) that are derived from <strong>.violet</strong> 
+files.&nbsp; You will use the MDELite tool, from the previous assignment, to (a) 
+translate a <strong>.violet</strong> file to a Prolog database and (b) you will 
+write a set of Prolog rules to check whether the <strong>.violet</strong> 
+diagram conforms to sensible UML metamodel constraints.</p>
+<hr>
+<p class="style3">Before continuing, you should understand the set of prolog 
+tables that are generated.&nbsp; The <a href="violet.schema.pl">schema for the 
+violet database</a> is here.&nbsp; A database is a list of tables. In this 
+example, a violet database consists of 5 tables, namely <strong>violetClass</strong>,
+<strong>violetInterface</strong>, <strong>violetAssociation</strong>, <strong>
+violetInterfaceExtends</strong>, and <strong>violetClassImplements</strong>.</p>
+<p class="style3">Let's look at table definition.&nbsp; An example -- not from 
+the violet database -- is show below:</p>
+<pre class="style4">table(myTable,[id,&quot;A&quot;,&quot;B&quot;,C]).&nbsp;</pre>
+<p class="style3">This defines the prolog table &quot;<span class="style11"><strong>myTable</strong></span>&quot; with the 
+following column names -- <span class="style9">id</span>, <span class="style11">A</span>, 
+<span class="style11">B</span>, <span class="style11">C</span>.&nbsp; Columns 
+<span class="style9">id</span> and <span class="style11">C</span> contain prolog 
+atoms (unquoted names or numbers), and columns A and B will contain 
+<span class="style12">single-quoted</span> strings.&nbsp; A few tuples of this table might look like:</p>
+<pre class="style4">myTable(c1,'don','imus', 44).
+myTable(c2,'jack','sprat',33).
+myTable(c3,'leslie','neilson',88).</pre>
+<p class="style3">Now, here are the schema declarations for the tables in the 
+Violet database:</p>
+<pre class="style4">table(violetClass,[id,&quot;name&quot;,&quot;fields&quot;,&quot;methods&quot;,superid,x,y]).</pre>
+<pre class="style5">violetClass is the name of a table with 7 columns.
+id is the internal name of a class. 
+superid = the id of the superclass; null if there is no superclass
+x,y are the coordinate positions at which this class is displayed.
+name, fields, methods are single-quoted strings which contain the name of the class,
+the string of fields and methods for that class.&nbsp;</pre>
+<pre class="style4">table(violetInterface,[id,&quot;name&quot;,&quot;methods&quot;,x,y]).</pre>
+<pre class="style5">violetInterface is the name of a table with 5 columns.
+id is the internal name of a class. 
+x,y are the coordinate positions at which this class is displayed.
+name, fields, methods are single-quoted strings which contain the name of the class,
+the string of fields and methods for that class.&nbsp;</pre>
+<pre class="style4">table(violetAssociation,[cid1,&quot;role1&quot;,arrow1,type1,cid2,&quot;role2&quot;,arrow2,type2,lineStyle]).</pre>
+<pre class="style5">violetAssociation is a table with 9 columns.
+cid1, cid2 are identifiers of classes or interfaces to be connected.
+irole1, role2 -- is any text e.g., name and/or cardinality to be displayed
+arrow1, arrow2 -- only legal values {NONE,TRIANGLE,V,DIAMOND,BLACK_DIAMOND}, <span class="style14"><strong>where NONE is ''</strong></span>
+linestyle -- only legal values {SOLID,DOTTED}</pre>
+<pre class="style4">table(violetInterfaceExtends,[id,idx]).</pre>
+<pre class="style5">encodes (interface A extends interface B) ordered pairs&nbsp;</pre>
+<pre class="style4">table(violetClassImplements,[cid,iid]).</pre>
+<pre class="style5">encodes (class A implements interface B) ordered pairs&nbsp;</pre>
+<hr>
+<p class="style3">You are to write metamodel constraints in Prolog that will evaluate the 
+correctness of <strong>.violet</strong> models of class diagrams.&nbsp; There are all sorts of 
+constraints that you could write on checking the validity of fields and methods. 
+But because Violet simply mashes field and method declarations into a big fat 
+text string, this makes it much harder to perform such checks.&nbsp; So to keep 
+things simple -- and you should thank me for this --&nbsp; do not 
+make these checks!&nbsp; <span class="style8">Limit yourself to checking only the validity of links 
+(associations, extends links, and implements links), and the names on links and 
+boxes.</span></p>
+<p class="style3">You will again use the MDELite package from the previous 
+assignment.&nbsp; In the MDELite zip file, you will find a <strong>libpl</strong> 
+(Prolog Library), and within <strong>libpl</strong>, the file <strong>
+violet.conform.pl</strong>, which is the prolog file in which you are to place 
+your rules for validating constraints (and posting error messages).&nbsp; 
+Currently this file is empty.&nbsp; <a href="violet.conform.pl">Here is a replacement that checks a 
+nonsensical rule that no class or interface can be named 'Don'.</a>&nbsp; (I supply 
+this so that you can get started -- of course, you should throw this rule out 
+and replace it with your own rules.&nbsp; Further, note that you can use the 
+rules defined in <strong>libpl/conform.pl</strong>, as I have done with the 'Don' rule, to write 
+your own conformance tests).&nbsp; Bottom line: your job is to add real prolog 
+rules.</p>
+<p class="style13"><strong>Hint: mdelite concatenates a bunch of prolog files 
+and uses SWIProlog to execute them.&nbsp; The file that is executed from which 
+error messages are produced is &quot;tmpconform.sdb.pl&quot;.&nbsp; If you get unexpected 
+errors, consult this file.&nbsp; If mdelite detects no errors, it will 
+simply delete this file, leaving no trace of its execution.</strong></p>
+<p class="style3">To invoke your the rules in your file, let 
+<span class="style9">XXX.violet</span><span class="style10"> </span>be the 
+Violet file that you want to examine.&nbsp; Make the following call:</p>
+<pre class="style4">&gt; java mdelite.Conform violet XXX</pre>
+<p class="style3">What will happen is that MDELite will transform 
+<span class="style9">XXX.violet</span><span class="style10"> </span>into <span class="style9">XXX.violet.pl</span> (a prolog file) that contains a set of Prolog facts that 
+encode your Violet design.&nbsp; (This is how <a href="diagram1.xml">the .violet file</a> was translate into 
+<a href="diagram1.violet.pl">a 
+prolog file</a>).This file will be stored in the same directory 
+as your &nbsp;<span class="style9">XXX.violet</span><span class="style10"> file.</span>
+Then, your <span class="style9">violet.conform.pl</span> file will be executed on the generated prolog file 
+to report any errors.</p>
+<hr>
+<p class="style3"><a href="examples.zip">The following zip file</a> contains a set of 
+six Violet 
+designs that you are to validate.&nbsp; For each file, present the list of error 
+messages (if any) that your tool produces.&nbsp; I presume that you will test 
+your work on other Violet designs.&nbsp; You may include them (and their 
+documentation) too. </p>
+<p class="style3">You should submit:</p>
+<ol>
+				<li>
+				<p class="style3"><strong>All source code</strong></p>
+				</li>
+				<li>
+				<p class="style3">Your <strong>violet.conform.pl</strong> file</p>
+				</li>
+				<li>
+				<p class="style3">An easy to read english description of this 
+				file.&nbsp; (You might combine 1&amp;2 by adding comments in the
+				<strong>violet.conform.pl </strong>file)&nbsp;</p>
+				</li>
+				<li>
+				<p class="style3">For each example, the output of your 
+				conformance test.</p>
+				</li>
+</ol>
+<p class="style3">You should expect other violet files, of the TA's choosing, 
+will be used to evaluate your rules/constraints.&nbsp;</p>
+

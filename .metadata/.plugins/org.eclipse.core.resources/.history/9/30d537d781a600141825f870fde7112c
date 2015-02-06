@@ -1,0 +1,23 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package reflection;
+
+/**
+ *
+ * @author Nick
+ */
+public class Reflection {
+
+    /**
+     * @param args the command line arguments
+     * @throws ClassNotFoundException 
+     */
+    public static void main(String[] args) throws ClassNotFoundException {
+    	Class<?> c = Class.forName(args[0]);
+    	System.out.println(c.getName());
+    }
+
+}

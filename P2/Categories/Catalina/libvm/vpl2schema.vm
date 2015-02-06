@@ -1,0 +1,65 @@
+##  This is some gross velocity code for generating schemas
+##  Look at allList towards the bottom -- I couldn't figure out
+##  how to generate a variable-length list -- but the if a 
+##  prolog fact has more than 26 columns, something is deeply wrong
+##
+##
+#set($MARKER="//----")
+${MARKER}${OutputFileName}
+##
+#set ( $accum = "" )
+#set ( $separ = "" )
+#foreach( $c in $violetClassS)
+   #set ($accum = $c.name + $separ + $accum )
+   #set ($separ = ",")
+#end 
+dbase(${Vm2tInFileName},[${accum}]).
+## end of dbase
+
+## print table declarations
+#foreach( $c in $violetClassS)
+   #set ( $links = "" )
+   #set ( $existing = $c.fields.replace(";",",") )
+   #if ($existing != "")
+      #set ($existing = "," + $existing )
+   #end
+   #foreach( $a in $violetAssociationS )
+      #if ( $a.arrow1 != "TRIANGLE" && $a.role1 != "" && $a.cid2 == $c.id )
+         #set ( $fields = $a.role1.replace(";",",") )
+         #set ( $links = $links + "," + $fields )
+      #end
+      #if ( $a.arrow2 != "TRIANGLE" && $a.role2 != "" && $a.cid1 == $c.id )
+         #set ( $fields = $a.role2.replace(";",",") )
+         #set ( $links = $links + "," + $fields )
+      #end
+   #end
+table(${c.name},[id${existing}${links}]).
+#end
+## end of table declarations
+
+## print tuple declarations
+#foreach ( $c in $violetClassS )
+   #set ($fields = $c.fields + ";")
+   #if ($fields==";")
+      #set($count = 1)
+   #else
+      #set($kount = $fields.replaceAll("[^;]","") )
+      #set($count = $kount.length()+1)
+   #end
+   #foreach( $a in $violetAssociationS )
+      #if ( $a.arrow1 != "TRIANGLE" && $a.role1 != "" && $a.cid2 == $c.id )
+         #set( $nfields = $a.role1.replaceAll("[^;]","").length()+1 )
+         #set( $count = $count + $nfields )
+      #end
+      #if ( $a.arrow2 != "TRIANGLE" && $a.role2 != "" && $a.cid1 == $c.id )
+         #set( $nfields = $a.role2.replaceAll("[^;]","").length()+1 )
+         #set( $count = $count + $nfields )
+      #end
+   #end
+   #set( $allList = "A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z" )
+   #set( $len = 2*$count - 1 )
+   #set( $theList = $allList.substring(0,$len) )
+tuple(${c.name},L):-${c.name}(${theList}),L=[${theList}].
+#end
+
+

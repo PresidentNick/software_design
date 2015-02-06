@@ -1,0 +1,2 @@
+run :- writeln('OK.').
+run.

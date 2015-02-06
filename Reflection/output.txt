@@ -1,0 +1,18 @@
+:- discontiguous bcClass/3, bcMember/7.
+:- dynamic bcClass/3, bcMember/7.
+
+bcClass(c0, 'yparser.connection', 'Object').
+
+/* public Constructors */
+bcMember(m0, c0, true, false, 
+
+bcClass(c1, 'yparser.klass', 'Object').
+
+/* public Constructors */
+bcMember(m0, c1, true, false, 
+bcMember(m0, c1, true, false, 
+
+bcClass(c2, 'yparser.Main', 'Object').
+
+/* public Constructors */
+bcMember(m0, c2, true, false, 
